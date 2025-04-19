@@ -20,7 +20,9 @@ public class SignUp extends HttpServlet {
         System.out.println("SignUp servlet initialized");
 //        System.out.println("something went wrong..");
 //        System.out.println("Pradhap i love you");
+//        System.out.println("AbarnaPradhap");
     }
+    
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
