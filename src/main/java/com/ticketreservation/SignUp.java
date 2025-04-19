@@ -18,9 +18,6 @@ public class SignUp extends HttpServlet {
     @Override
     public void init() throws ServletException {
         System.out.println("SignUp servlet initialized");
-//        System.out.println("something went wrong..");
-//        System.out.println("Pradhap i love you");
-//        System.out.println("AbarnaPradhap");
     }
     
 
