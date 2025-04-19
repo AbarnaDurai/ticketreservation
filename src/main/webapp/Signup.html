@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signup</title>
+    <link rel="stylesheet" href="signup.css">
+</head>
+<body>
+    <div class="top-bar">
+        <button class="nav-btn" onclick="window.location.href='login.html'">Login</button>
+        <span class="nav-text">Already have an account?</span>
+    </div>
+
+    <div class="outer-box">
+        <div class="container">
+            <h3>Signup</h3>
+
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" placeholder="Enter username" onblur="checkUsernameAvailability()">
+            <div id="usernameStatus"></div>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password">
+
+            <button onclick="submitForm()">Submit</button>
+        </div>
+    </div>
+
+    <script>
+        function submitForm() {
+            const uname = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            if (!uname || !password) {
+                alert("Username and password must not be empty.");
+                return;
+            }
+
+            fetch("http://localhost:8085/ticketreservation/SignUp", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username: uname, password: password })
+            })
+            .then(async response => {
+                const text = await response.text();
+                try {
+                    const data = JSON.parse(text);
+                    alert(data.message || "Signup successful!");
+                } catch (e) {
+                    console.error("Non-JSON response:", text);
+                    alert("Unexpected server response. Please check the server or try again.");
+                }
+            })
+            .catch(error => {
+                alert("Fetch error: " + error.message);
+            });
+        }
+
+        function checkUsernameAvailability() {
+            const uname = document.getElementById("username").value.trim();
+            const statusDiv = document.getElementById("usernameStatus");
+
+            if (!uname) {
+                statusDiv.textContent = "";
+                return;
+            }
+
+            fetch(`http://localhost:8085/ticketreservation/SignUp?username=${uname}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "User exists") {
+                        statusDiv.textContent = "Username already taken";
+                        statusDiv.style.color = "red";
+                    } else if (data.status === "User available") {
+                        statusDiv.textContent = "Username available";
+                        statusDiv.style.color = "green";
+                    }
+                })
+                .catch(error => {
+                    console.error("Username check error:", error);
+                });
+        }
+    </script>
+</body>
+</html>

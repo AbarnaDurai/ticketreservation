@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+    <div class="top-bar">
+        <button class="nav-btn" onclick="window.location.href='Signup.html'">SignUp</button>
+        <span class="nav-text">Create a new account</span>
+    </div>
+
+    <div class="outer-box">
+        <div class="inner-box">
+            <h2>Login</h2>
+
+            <label for="username">Username:</label>
+            <input type="text" id="username" placeholder="Enter username">
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Enter your password">
+
+            <button onclick="submitForm()">Submit</button>
+        </div>
+    </div>
+
+    <script>
+        function submitForm() {
+            const uname = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            fetch("http://localhost:8085/ticketreservation/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: uname,
+                    password: password
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Server error");
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Success:", data);
+                alert(data.message);
+     
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Something went wrong");
+            });
+        }
+
+      
+    </script>
+
+</body>
+</html>
