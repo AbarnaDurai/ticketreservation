@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bus Seat Booking</title>
+  <link rel="stylesheet" href="Seat.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Bus Seat Booking</h1>
+
+    <div class="seat-layout" id="seat-layout">
+      <!-- Seats will be added dynamically -->
+    </div>
+
+    <div class="controls">
+      <input type="text" id="username" placeholder="Enter your username" />
+      <button id="book-btn">Book Seat</button>
+    </div>
+  </div>
+
+  <script>
+    const seatLayout = document.getElementById('seat-layout');
+    let selectedSeat = null;
+
+    // Generate seat layout
+    let seatNumber = 1;
+    for (let i = 0; i < 5; i++) {
+      const row = document.createElement('div');
+      row.className = 'row';
+
+      for (let j = 0; j < 2; j++) {
+        const seat = document.createElement('button');
+        seat.className = 'seat';
+        seat.textContent = seatNumber;
+        seat.dataset.seat = seatNumber;
+        seat.addEventListener('click', () => {
+          if (seat.classList.contains('booked')) return;
+          document.querySelectorAll('.seat').forEach(s => s.classList.remove('selected'));
+          seat.classList.add('selected');
+          selectedSeat = seat;
+        });
+        row.appendChild(seat);
+        seatNumber++;
+      }
+
+      const gap = document.createElement('div');
+      gap.className = 'gap';
+      row.appendChild(gap);
+
+      for (let j = 0; j < 2; j++) {
+        const seat = document.createElement('button');
+        seat.className = 'seat';
+        seat.textContent = seatNumber;
+        seat.dataset.seat = seatNumber;
+        seat.addEventListener('click', () => {
+          if (seat.classList.contains('booked')) return;
+          document.querySelectorAll('.seat').forEach(s => s.classList.remove('selected'));
+          seat.classList.add('selected');
+          selectedSeat = seat;
+        });
+        row.appendChild(seat);
+        seatNumber++;
+      }
+
+      seatLayout.appendChild(row);
+    }
+
+    document.getElementById('book-btn').addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      if (!username) {
+        alert('Please enter your username');
+        return;
+      }
+      if (!selectedSeat) {
+        alert('Please select a seat');
+        return;
+      }
+
+      // Send booking request to server
+      fetch('http://localhost:8085/ticketreservation/BookSeat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: username,
+          seatNumber: selectedSeat.dataset.seat
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          selectedSeat.classList.remove('selected');
+          selectedSeat.classList.add('booked');
+          selectedSeat.disabled = true;
+          alert(`Seat ${selectedSeat.dataset.seat} booked for ${username}`);
+        } else {
+          alert('Seat booking failed. Please try again.');
+        }
+        selectedSeat = null;
+      })
+      .catch(error => {
+        alert('Error booking seat: ' + error.message);
+        selectedSeat = null;
+      });
+    });
+  </script>
+</body>
+</html>

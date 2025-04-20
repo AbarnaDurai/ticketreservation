@@ -1,0 +1,101 @@
+/* Reset and background */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Main container */
+.container {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+/* Title */
+h1 {
+  margin-bottom: 20px;
+}
+
+/* Seat layout area */
+.seat-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Each row */
+.row {
+  display: flex;
+  justify-content: center;
+  margin: 8px;
+}
+
+/* Space between seat pairs */
+.gap {
+  width: 20px;
+}
+
+/* Seat button style */
+.seat {
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  background-color: #4CAF50; /* Green */
+  color: white;
+  border: 2px solid #388E3C;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s;
+}
+
+.seat:hover {
+  transform: scale(1.1);
+}
+
+/* Selected seat */
+.seat.selected {
+  background-color: #81C784; /* Light green */
+}
+
+/* Booked seat */
+.seat.booked {
+  background-color: #f44336; /* Red */
+  border: 2px solid #c62828;
+}
+
+/* Input & Button */
+.controls {
+  margin-top: 20px;
+}
+
+input {
+  padding: 10px;
+  font-size: 16px;
+  width: 220px;
+  margin-right: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
