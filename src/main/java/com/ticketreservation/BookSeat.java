@@ -11,11 +11,9 @@ import javax.servlet.http.*;
 
 import org.json.JSONObject;
 
-@WebServlet("/ticketreservation/bookSeat")
-
+@WebServlet("/BookSeat")
 public class BookSeat extends HttpServlet {
 
-    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -23,57 +21,53 @@ public class BookSeat extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         try (PrintWriter out = response.getWriter()) {
-            String requestBody = request.getReader().lines().collect(Collectors.joining());
-            JSONObject json = new JSONObject(requestBody);
+            String body = request.getReader().lines().collect(Collectors.joining());
+            JSONObject json = new JSONObject(body);
 
             String username = json.optString("username");
             String seatNumber = json.optString("seatNumber");
+            
+            System.out.println("username:"+username);
+            System.out.println("seatNumber:"+seatNumber);
 
-            System.out.println("Booking attempt - Username: " + username + ", Seat Number: " + seatNumber);
+            JSONObject jsonResponse = new JSONObject();
 
-            if (username == null || username.trim().isEmpty() || seatNumber == null || seatNumber.trim().isEmpty()) {
+            if (username.isEmpty() || seatNumber.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.write("{\"error\": \"Username and seat number must not be empty\"}");
+                jsonResponse.put("success", false);
+                jsonResponse.put("error", "Username and seat number are required.");
+                out.write(jsonResponse.toString());
                 return;
             }
 
             if (isSeatBooked(seatNumber)) {
                 response.setStatus(HttpServletResponse.SC_CONFLICT);
-                out.write("{\"error\": \"Seat " + seatNumber + " already booked\"}");
+                jsonResponse.put("success", false);
+                jsonResponse.put("error", "Seat already booked");
+                out.write(jsonResponse.toString());
                 return;
             }
 
             if (bookSeat(username, seatNumber)) {
-                JSONObject jsonResponse = new JSONObject();
-                jsonResponse.put("message", "Seat " + seatNumber + " booked successfully!");
                 response.setStatus(HttpServletResponse.SC_OK);
-                out.write(jsonResponse.toString());
+                jsonResponse.put("success", true);
+                jsonResponse.put("message", "Seat booked successfully");
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                out.write("{\"error\": \"Failed to book seat\"}");
+                jsonResponse.put("success", false);
+                jsonResponse.put("error", "Failed to book seat");
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"error\": \"Unexpected error occurred\"}");
+            out.write(jsonResponse.toString());
         }
     }
 
     private boolean isSeatBooked(String seatNumber) {
-        String dbUrl = "jdbc:mysql://localhost:3306/busseate";
-        String dbUser = "root";
-        String dbPass = "Abarna@1234";
-
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPass)) {
-                String sql = "SELECT * FROM seatbooking WHERE seat_number = ? AND status = 'booked'";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, seatNumber);
-                    ResultSet rs = stmt.executeQuery();
-                    return rs.next();
-                }
+        try (Connection conn = getConnection()) {
+            String sql = "SELECT 1 FROM seatbooking WHERE seat_number = ? AND status = 'booked'";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, seatNumber);
+                return stmt.executeQuery().next();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,24 +76,25 @@ public class BookSeat extends HttpServlet {
     }
 
     private boolean bookSeat(String username, String seatNumber) {
-        String dbUrl = "jdbc:mysql://localhost:3306/busseate";
-        String dbUser = "root";
-        String dbPass = "Abarna@1234";
-
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPass)) {
-                String sql = "INSERT INTO seatbooking (username, seat_number, status) VALUES (?, ?, 'booked')";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, username);
-                    stmt.setString(2, seatNumber);
-                    return stmt.executeUpdate() > 0;
-                }
+        try (Connection conn = getConnection()) {
+            String sql = "INSERT INTO seatbooking (username, seat_number, status) VALUES (?, ?, 'booked')";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, username);
+                stmt.setString(2, seatNumber);
+                return stmt.executeUpdate() > 0;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private Connection getConnection() throws Exception {
+        String url = "jdbc:mysql://localhost:3306/busseate";
+        String user = "root";
+        String pass = "Abarna@1234";
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        return DriverManager.getConnection(url, user, pass);
     }
 
     @Override
