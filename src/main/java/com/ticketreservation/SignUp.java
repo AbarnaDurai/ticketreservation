@@ -16,12 +16,6 @@ import org.json.JSONObject;
 public class SignUp extends HttpServlet {
 
     @Override
-    public void init() throws ServletException {
-        System.out.println("SignUp servlet initialized");
-    }
-    
-
-    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -35,9 +29,6 @@ public class SignUp extends HttpServlet {
 
             String username = json.optString("username").trim();
             String password = json.optString("password").trim();
-
-            System.out.println("Username:" + username);
-            System.out.println("Password:" + password);
 
             if (username.isEmpty() || password.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -102,39 +93,7 @@ public class SignUp extends HttpServlet {
         }
     }
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        System.out.println("Inside SignUp servlet doGet()");
-        String username = request.getParameter("username");
-
-        if (username != null && !username.trim().isEmpty()) {
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-
-            try (PrintWriter out = response.getWriter()) {
-                String userStatus = checkUserExists(username.trim());
-                JSONObject jsonResponse = new JSONObject();
-
-                if (userStatus.equalsIgnoreCase("User exists")) {
-                    jsonResponse.put("status", "exists");
-                } else if (userStatus.equalsIgnoreCase("User not found")) {
-                    jsonResponse.put("status", "available");
-                } else {
-                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    jsonResponse.put("error", userStatus);
-                }
-
-                out.write(jsonResponse.toString());
-            }
-        } else {
-            request.getRequestDispatcher("/Signup.html").forward(request, response);
-        }
-    }
-
     protected String checkUserExists(String username) {
-
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             try (Connection conn = DriverManager.getConnection(

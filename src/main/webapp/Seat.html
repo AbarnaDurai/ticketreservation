@@ -9,22 +9,29 @@
   <div class="container">
     <h1>Bus Seat Booking</h1>
 
-    <div class="seat-layout" id="seat-layout">
-      <!-- Seats will be added dynamically -->
-    </div>
+    <div class="seat-layout" id="seat-layout"></div>
 
     <div class="controls">
       <input type="text" id="username" placeholder="Enter your username" />
       <button id="book-btn">Book Seat</button>
+    </div>
+
+    <div class="history-btn-container">
+      <button class="history-btn" id="history-btn">Booking History</button>
+    </div>
+
+    <div id="booking-history" style="display: none;">
+      <h3>Your Booking History</h3>
+      <ul id="history-list"></ul>
     </div>
   </div>
 
   <script>
     const seatLayout = document.getElementById('seat-layout');
     let selectedSeat = null;
-
-    // Generate seat layout
     let seatNumber = 1;
+
+    // Generate the seats layout dynamically
     for (let i = 0; i < 5; i++) {
       const row = document.createElement('div');
       row.className = 'row';
@@ -66,6 +73,7 @@
       seatLayout.appendChild(row);
     }
 
+    // Book seat
     document.getElementById('book-btn').addEventListener('click', () => {
       const username = document.getElementById('username').value.trim();
       if (!username) {
@@ -77,7 +85,6 @@
         return;
       }
 
-      // Send booking request to server
       fetch('http://localhost:8085/ticketreservation/BookSeat', {
         method: 'POST',
         headers: {
@@ -104,6 +111,32 @@
         alert('Error booking seat: ' + error.message);
         selectedSeat = null;
       });
+    });
+
+    // Fetch booking history
+    document.getElementById('history-btn').addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      if (!username) {
+        alert('Please enter your username to view history');
+        return;
+      }
+
+      fetch(`http://localhost:8085/ticketreservation/BookSeat?username=${username}`)
+        .then(response => response.json())
+        .then(data => {
+          const historyList = document.getElementById('history-list');
+          historyList.innerHTML = '';
+          data.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = `Seat Number: ${item.seatNumber} - Status: ${item.status}`;
+            historyList.appendChild(li);
+          });
+
+          document.getElementById('booking-history').style.display = 'block';
+        })
+        .catch(error => {
+          alert('Error fetching booking history: ' + error.message);
+        });
     });
   </script>
 </body>

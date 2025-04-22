@@ -9,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 @WebServlet("/BookSeat")
@@ -16,7 +17,6 @@ public class BookSeat extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
@@ -26,9 +26,6 @@ public class BookSeat extends HttpServlet {
 
             String username = json.optString("username");
             String seatNumber = json.optString("seatNumber");
-            
-            System.out.println("username:"+username);
-            System.out.println("seatNumber:"+seatNumber);
 
             JSONObject jsonResponse = new JSONObject();
 
@@ -89,17 +86,47 @@ public class BookSeat extends HttpServlet {
         return false;
     }
 
+    // Method to fetch booking history
+    private JSONArray getBookingHistory(String username) {
+        JSONArray history = new JSONArray();
+        try (Connection conn = getConnection()) {
+            String sql = "SELECT seat_number, status FROM seatbooking WHERE username = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, username);
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    JSONObject historyItem = new JSONObject();
+                    historyItem.put("seatNumber", rs.getString("seat_number"));
+                    historyItem.put("status", rs.getString("status"));
+                    history.put(historyItem);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return history;
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String username = request.getParameter("username");
+        if (username != null && !username.isEmpty()) {
+            JSONArray history = getBookingHistory(username);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            PrintWriter out = response.getWriter();
+            out.write(history.toString());
+        } else {
+            request.getRequestDispatcher("/Seat.html").forward(request, response);
+        }
+    }
+
     private Connection getConnection() throws Exception {
         String url = "jdbc:mysql://localhost:3306/busseate";
         String user = "root";
         String pass = "Abarna@1234";
         Class.forName("com.mysql.cj.jdbc.Driver");
         return DriverManager.getConnection(url, user, pass);
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        request.getRequestDispatcher("/Seat.html").forward(request, response);
     }
 }
