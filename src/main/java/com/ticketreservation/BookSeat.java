@@ -86,7 +86,6 @@ public class BookSeat extends HttpServlet {
         return false;
     }
 
-    // Method to fetch booking history
     private JSONArray getBookingHistory(String username) {
         JSONArray history = new JSONArray();
         try (Connection conn = getConnection()) {
